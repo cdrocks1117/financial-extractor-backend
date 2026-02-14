@@ -1,5 +1,5 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 import pandas as pd
 from io import BytesIO
@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Financial Statement Extractor API")
 
-# CORS Configuration - Update this with your Vercel domain
+# CORS Configuration
 ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:3001",
@@ -27,8 +27,9 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 # Check if Tesseract is available
@@ -38,7 +39,7 @@ try:
 except Exception as e:
     logger.warning(f"Tesseract not found: {e}")
 
-# Check if Poppler is available (pdfinfo command)
+# Check if Poppler is available
 def is_poppler_available():
     """Check if poppler-utils is installed by looking for pdfinfo"""
     return shutil.which("pdfinfo") is not None
@@ -82,8 +83,9 @@ def parse_financial_lines(text_data):
     return parsed_data
 
 @app.get("/")
+@app.head("/")
 async def root():
-    """Health check endpoint"""
+    """Health check endpoint - supports both GET and HEAD"""
     return {
         "status": "healthy",
         "service": "Financial Statement Extractor API",
@@ -111,6 +113,18 @@ async def health():
             "poppler": "installed" if poppler_available else "missing"
         }
     }
+
+@app.options("/upload")
+async def upload_options():
+    """Handle CORS preflight for upload endpoint"""
+    return JSONResponse(
+        content={"message": "OK"},
+        headers={
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "POST, OPTIONS",
+            "Access-Control-Allow-Headers": "*",
+        }
+    )
 
 @app.post("/upload")
 async def upload_pdf(file: UploadFile = File(...)):
