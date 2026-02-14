@@ -8,6 +8,7 @@ import pytesseract
 import os
 import re
 import logging
+import shutil
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -20,8 +21,6 @@ ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:3001",
     "https://financial-extractor-frontend.vercel.app"
-    # Add your Vercel domain here after deployment
-    # "https://your-app.vercel.app",
 ]
 
 app.add_middleware(
@@ -38,6 +37,11 @@ try:
     logger.info("Tesseract is available")
 except Exception as e:
     logger.warning(f"Tesseract not found: {e}")
+
+# Check if Poppler is available (pdfinfo command)
+def is_poppler_available():
+    """Check if poppler-utils is installed by looking for pdfinfo"""
+    return shutil.which("pdfinfo") is not None
 
 def parse_financial_lines(text_data):
     """
@@ -96,10 +100,16 @@ async def health():
     except:
         pass
     
+    poppler_available = is_poppler_available()
+    
     return {
         "status": "healthy",
         "tesseract_available": tesseract_available,
-        "poppler_configured": os.environ.get("POPPLER_PATH") is not None
+        "poppler_available": poppler_available,
+        "dependencies": {
+            "tesseract": "installed" if tesseract_available else "missing",
+            "poppler": "installed" if poppler_available else "missing"
+        }
     }
 
 @app.post("/upload")
@@ -124,14 +134,8 @@ async def upload_pdf(file: UploadFile = File(...)):
         
         # Convert PDF to images
         try:
-            # Poppler path will be set via environment variable in Render
-            poppler_path = os.environ.get("POPPLER_PATH")
-            
-            if poppler_path:
-                images = convert_from_bytes(contents, poppler_path=poppler_path)
-            else:
-                images = convert_from_bytes(contents)
-            
+            # In Docker, poppler is installed system-wide, no path needed
+            images = convert_from_bytes(contents)
             logger.info(f"Converted PDF to {len(images)} images")
         except Exception as e:
             logger.error(f"PDF conversion error: {str(e)}")
