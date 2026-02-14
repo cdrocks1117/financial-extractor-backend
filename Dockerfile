@@ -21,8 +21,5 @@ COPY backend.py .
 # Expose the port
 EXPOSE 8000
 
-# Set environment variable for port
-ENV PORT=8000
-
-# Run the application
-CMD uvicorn backend:app --host 0.0.0.0 --port $PORT
+# Run the application - Render provides PORT env variable
+CMD uvicorn backend:app --host 0.0.0.0 --port ${PORT:-8000}
