@@ -19,7 +19,7 @@ app = FastAPI(title="Financial Statement Extractor API")
 ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:3001",
-    "https://financial-extractor-frontend.vercel.app/"
+    "https://financial-extractor-frontend.vercel.app"
     # Add your Vercel domain here after deployment
     # "https://your-app.vercel.app",
 ]
