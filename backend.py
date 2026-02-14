@@ -20,7 +20,8 @@ app = FastAPI(title="Financial Statement Extractor API")
 ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:3001",
-    "https://financial-extractor-frontend.vercel.app"
+    "https://financial-extractor-frontend.vercel.app",
+    "https://financial-extractor-frontend-fkdkw1zbh.vercel.app"
 ]
 
 app.add_middleware(
