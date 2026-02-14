@@ -1,14 +1,13 @@
-# Use Python 3.11 slim image
 FROM python:3.11-slim
 
-# Set working directory
-WORKDIR /app
-
-# Install system dependencies for Tesseract and Poppler
+# Install system dependencies for PDF processing
 RUN apt-get update && apt-get install -y \
-    tesseract-ocr \
     poppler-utils \
+    tesseract-ocr \
+    tesseract-ocr-eng \
     && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
 
 # Copy requirements first for better caching
 COPY requirements.txt .
@@ -19,12 +18,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY backend.py .
 
-# Set environment variables
-ENV PYTHONUNBUFFERED=1
-ENV PORT=8000
-
-# Expose port
+# Expose the port
 EXPOSE 8000
+
+# Set environment variable for port
+ENV PORT=8000
 
 # Run the application
 CMD uvicorn backend:app --host 0.0.0.0 --port $PORT
