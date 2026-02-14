@@ -21,9 +21,11 @@ ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:3001",
     "https://financial-extractor-frontend.vercel.app",
-    "https://financial-extractor-frontend-fkdkw1zbh.vercel.app"
+    "https://financial-extractor-frontend-fkdkw1zbh.vercel.app",
+    "https://financial-extractor-f-git-bf7346-chetan-naiks-projects-f6ccff07.vercel.app"
 ]
 
+# Allow all Vercel preview deployments
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
@@ -31,6 +33,7 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"],
     allow_headers=["*"],
     expose_headers=["*"],
+    allow_origin_regex=r"https://.*\.vercel\.app",  # Allow all Vercel domains
 )
 
 # Check if Tesseract is available
